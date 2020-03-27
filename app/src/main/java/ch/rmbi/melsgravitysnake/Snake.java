@@ -118,6 +118,7 @@ public class Snake {
                 break;
         }
 
+
     }
 
     public void addPart()

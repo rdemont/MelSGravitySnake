@@ -75,6 +75,16 @@ public class Foods {
         int x = random.nextInt(this.maxX);
         int y = random.nextInt(this.maxY);
 
+        while ((hasFood(x,y))
+                || (x < this.accuracy)
+                || (y < this.accuracy)
+                || (x+this.accuracy > this.maxX )
+                || (y+this.accuracy > this.maxY ))
+        {
+            x = random.nextInt(this.maxX);
+            y = random.nextInt(this.maxY);
+        }
+
         return new Food(x,y);
     }
 
