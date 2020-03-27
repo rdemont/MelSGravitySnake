@@ -7,13 +7,26 @@ import android.graphics.Paint;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.util.AttributeSet;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 public class GameBoard extends View implements SensorEventListener {
 
     private Snake snake;
     private Foods foods;
     private long lastMove ;
+    private int speed ;
+    private static int MAXSPEED = 500;
+    private boolean isStarting = false ;
+    private TextView tvScore ;
+    private int score = 0 ;
+    private Button bStart ;
+    private int maxX;
+    private int maxY;
     //private int lastDirection = Snake.MOVE_TOP ;
     //private int nextDirection ;
 
@@ -21,55 +34,101 @@ public class GameBoard extends View implements SensorEventListener {
 
     private static final int SHAKE_THRESHOLD = 600;
 
+    public GameBoard(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context);
+    }
+
+    public GameBoard(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
+    }
+
+    public GameBoard(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init(context);
+    }
 
     public GameBoard(Context context) {
         super(context);
+        init(context);
+    }
 
-
-
+    private void init(Context context)
+    {
         this.lastMove = System.currentTimeMillis();
-    }
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
 
-        reStart();
 
     }
 
-    private void reStart(){
+    private void placeGame(Canvas canvas)
+    {
 
-        foods = new Foods(10);
+        if (!isStarting) {
+            int x = this.getWidth() / 2;
+            int y = this.getHeight() / 2;
 
-        int x = getWidth()  / 2;
-        int y = getHeight() / 2;
-        snake = new Snake(x,y,getWidth(),getHeight());
-        snake.addPart();
-        snake.addPart();
-        snake.addPart();
-        snake.addPart();
-        snake.addPart();
-        snake.addPart();
-        snake.addPart();
-        snake.addPart();
-
+            this.speed = MAXSPEED;
+            this.score =0 ;
+            foods = new Foods(10);
+            snake = new Snake();
+            snake.initSnake(x, y, this.getWidth(), this.getHeight());
+            snake.addPart();
+            snake.addPart();
+            snake.addPart();
+            snake.addPart();
+            snake.addPart();
+            snake.addPart();
+            snake.addPart();
+            snake.addPart();
+        }
+        //this.invalidate();
     }
+    public void setTextView(TextView tv)
+    {
+        tvScore = tv ;
+    }
+
+    public void setButton(Button b)
+    {
+        bStart = b ;
+    }
+
+    public boolean getIsStarting()
+    {
+        return isStarting;
+    }
+
+    public void startGame()
+    {
+        isStarting = true ;
+        bStart.setText("Stop");
+    }
+
+    public void stopGame()
+    {
+        isStarting = false ;
+        bStart.setText("Pause");
+    }
+    private void gameLost()
+    {
+        stopGame();
+        bStart.setText("new start");
+    }
+
     public void moveSnake()
     {
-        if (snake==null)
-            snake = new Snake(getWidth()/2,0);
-
-
         snake.moveSnake();
         int snakeX = snake.currentX();
         int snakeY =  snake.currentY();
 
         if (Helper.instance().isClose(snakeX,0,21)
                 ||Helper.instance().isClose(snakeY,0,21)
-                ||Helper.instance().isClose(snakeX,getWidth(),21)
-                ||Helper.instance().isClose(snakeY,getHeight(),21)){
+                ||Helper.instance().isClose(snakeX,this.getWidth(),21)
+                ||Helper.instance().isClose(snakeY,this.getHeight(),21)){
 
-            reStart();
+            this.gameLost();
+            //tvScore.setText(tvScore.getText()+"--PERDU--");
 
         }
 
@@ -77,9 +136,11 @@ public class GameBoard extends View implements SensorEventListener {
         {
             foods.removeFood(snakeX, snakeY);
             snake.addPart();
+            score++;
+
         }
 
-
+        tvScore.setText(" Score: "+String.valueOf(score)+" / Step:" + String.valueOf(MAXSPEED-speed));
         this.invalidate();
     }
 
@@ -93,23 +154,24 @@ public class GameBoard extends View implements SensorEventListener {
         float y =  event.values[1];
         float z =  event.values[2];
 
+        if (isStarting) {
+            if (lastMove + speed < System.currentTimeMillis()) {
+                if (y < 0 - this.accuracy)
+                    snake.setNextMove(Snake.MOVE_TOP);
+                if (y > 0 + this.accuracy)
+                    snake.setNextMove(Snake.MOVE_BOTTOM);
+                if (x < 0 - this.accuracy)
+                    snake.setNextMove(Snake.MOVE_RIGHT);
+                if (x > 0 + this.accuracy)
+                    snake.setNextMove(Snake.MOVE_LEFT);
 
 
-        if (lastMove + 1000 < System.currentTimeMillis()) {
-            if (y < 0-this.accuracy )
-                snake.setNextMove(Snake.MOVE_TOP);
-            if (y > 0+this.accuracy )
-                snake.setNextMove(Snake.MOVE_BOTTOM);
-            if (x < 0-this.accuracy )
-                snake.setNextMove(Snake.MOVE_RIGHT);
-            if (x > 0+this.accuracy )
-                snake.setNextMove(Snake.MOVE_LEFT);
+                lastMove = System.currentTimeMillis();
 
+                moveSnake();
 
-            lastMove = System.currentTimeMillis();
-
-            moveSnake();
-
+                speed--;
+            }
         }
     }
 
@@ -117,9 +179,8 @@ public class GameBoard extends View implements SensorEventListener {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        int w = getWidth();
-        int h = getHeight();
 
+        placeGame(canvas);
 
         snake.drawSnake(canvas);
         foods.drawFoods(canvas);

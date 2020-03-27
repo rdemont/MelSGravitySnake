@@ -19,13 +19,14 @@ public class Snake {
     private int maxX =0;
     private int maxY =0;
 
+    public Snake()
+    {
 
-    public Snake(int x, int y){
-        snakePart.add(new SnakePart(x,y));
     }
 
-    public Snake(int x, int y,int maxX, int maxY){
+    public void initSnake(int x, int y,int maxX, int maxY){
         snakePart.add(new SnakePart(x,y));
+        snakePart.get(0).setHead();
         this.maxX = maxX;
         this.maxY = maxY;
     }
@@ -127,7 +128,7 @@ public class Snake {
         int y = sLast.currentY;
         int radius = sLast.radius;
 
-        snakePart.add(new SnakePart(x,y-(radius*2)));
+        snakePart.add(new SnakePart(x,y+(radius*2)));
     }
 
 
@@ -139,6 +140,7 @@ public class Snake {
         private int imageHeight;
         private Paint pSnakePart;
         private int radius;
+
 
 
 
@@ -157,6 +159,15 @@ public class Snake {
             this.currentX = x;
             this.currentY = y;
         }
+
+        public void setHead()
+        {
+            pSnakePart.setColor(Color.RED);
+            pSnakePart.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        }
+
+
         public void  drawSnakePart(Canvas canvas)
         {
             canvas.drawCircle(this.currentX,this.currentY,this.radius,pSnakePart);

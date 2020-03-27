@@ -54,8 +54,8 @@ public class Foods {
 
     public void drawFoods(Canvas canvas)
     {
-        maxX =  canvas.getWidth();
-        maxY =  canvas.getHeight();
+        maxX =  canvas.getWidth()-21;
+        maxY =  canvas.getHeight()-21;
 
         if (foodList.size() < this.maxFood) {
             for (int i = foodList.size(); i < this.maxFood; i++) {
